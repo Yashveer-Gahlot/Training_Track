@@ -1,49 +1,52 @@
 "use client";
 
-import Profile from "@/components/Profile";
-import Settings from "@/components/Settings";
-import Loader from "@/components/Loader";
-import Error from "@/components/Error";
-import Introduction from "@/components/Introduction";
-import useUser from "@/hooks/useUser";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { motion } from "framer-motion";
+import Hero from "@/components/Hero";
+import ProfileSection from "@/components/ProfileSection";
+import IntroductionSection from "@/components/IntroductionSection";
 
 const Home = () => {
-  const { user, isLoading, error, logout, changeUserLevel } = useUser();
-
-  if (isLoading) {
-    return <Loader />;
-  }
-
-  if (error) {
-    return <Error />;
-  }
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" },
+    },
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 font-mono">
-      <Card className="w-full max-w-2xl">
-        <CardContent className="pt-6 space-y-6">
-          <Card>
-            <CardContent className="pt-6">
-              {user ? 
-                <Profile
-                  user={user}
-                  logout={logout}
-                  changeUserLevel={changeUserLevel}
-                /> : <Settings />}
-            </CardContent>
-          </Card>
-          <Separator className="my-4" />
-          <Card>
-            <CardContent className="pt-6">
-              <Introduction />
-            </CardContent>
-          </Card>
-        </CardContent>
-      </Card>
+    <div className="scroll-container">
+      <motion.div
+        className="scroll-section"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.5 }}
+        variants={sectionVariants}
+      >
+        <Hero />
+      </motion.div>
+      <motion.div
+        className="scroll-section"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.5 }}
+        variants={sectionVariants}
+      >
+        <ProfileSection />
+      </motion.div>
+      <motion.div
+        className="scroll-section"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.5 }}
+        variants={sectionVariants}
+      >
+        <IntroductionSection />
+      </motion.div>
     </div>
   );
 };
 
 export default Home;
+

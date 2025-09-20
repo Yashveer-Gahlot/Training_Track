@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Download, Trash } from "lucide-react";
 
 const Statistics = () => {
   const { history, isLoading, deleteTraining, clearHistory } = useHistory();
@@ -41,45 +42,66 @@ const Statistics = () => {
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-2xl font-bold">Statistics</CardTitle>
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">Export</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem
-                disabled={!history || history.length === 0}
-                onClick={onExportJson}
-                className="cursor-pointer"
-              >
-                JSON
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled>
-                CSV
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button variant="destructive" onClick={onClearHistory}>
-            Clear
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {history && history.length > 0 ? (
-          <>
-            <div className="w-full mb-6">
-              <ProgressChart history={history} />
+    <div className="space-y-8 animate-fade-in-up">
+       {history && history.length > 0 ? (
+        <>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-2xl font-bold">Your Progress</CardTitle>
+            <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    Export
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    disabled={!history || history.length === 0}
+                    onClick={onExportJson}
+                    className="cursor-pointer"
+                  >
+                    JSON
+                  </DropdownMenuItem>
+                  <DropdownMenuItem disabled>
+                    CSV
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button variant="destructive" onClick={onClearHistory}>
+                 <Trash className="mr-2 h-4 w-4" />
+                Clear
+              </Button>
             </div>
+          </CardHeader>
+          <CardContent>
+              <div className="w-full h-[350px] mb-6">
+                <ProgressChart history={history} />
+              </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Training History</CardTitle>
+          </CardHeader>
+          <CardContent>
             <History history={history} deleteTraining={deleteTraining} />
-          </>
+          </CardContent>
+        </Card>
+        </>
         ) : (
-          <div className="text-center py-4 text-muted-foreground">No training history</div>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-16 text-muted-foreground">
+                <h3 className="text-xl font-semibold">No training history yet</h3>
+                <p className="mt-2">Complete a session on the Training page to see your stats!</p>
+              </div>
+            </CardContent>
+          </Card>
         )}
-      </CardContent>
-    </Card>
+    </div>
   );
 };
 

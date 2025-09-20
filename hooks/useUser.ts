@@ -1,15 +1,15 @@
-import { useEffect } from "react";
-import useSWR from "swr";
+import { useState, useEffect, useCallback } from "react";
 import { User } from "@/types/User";
 import getUser from "@/utils/codeforces/getUser";
 import { getLevel, getLevelByRating } from "@/utils/getLevel";
-import { SuccessResponse, ErrorResponse } from "@/types/Response";
+import { SuccessResponse, ErrorResponse, Response } from "@/types/Response";
 
 const USER_STORAGE_KEY = "training-tracker-user";
-const USER_CACHE_KEY = "codeforces-user";
 
-const getStoredUser = () => {
+const getStoredUser = (): User | null => {
   try {
+    // This check prevents errors during server-side rendering
+    if (typeof window === "undefined") return null;
     const stored = localStorage.getItem(USER_STORAGE_KEY);
     return stored ? JSON.parse(stored) : null;
   } catch {
@@ -18,49 +18,32 @@ const getStoredUser = () => {
 };
 
 const useUser = () => {
-  const { data: user, isLoading, mutate, error } = useSWR<User | null>(
-    USER_CACHE_KEY,
-    getStoredUser,
-    {
-      fallbackData: getStoredUser(),
-      revalidateOnFocus: false,
-      revalidateOnReconnect: false
-    }
-  );
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const fetchLatestUser = async () => {
-      if (!user?.codeforcesHandle) return;
-      const res = await getUser(user.codeforcesHandle);
-      if (!res.success) return;
-      const profile = res.data;
-      if (
-        profile.rating !== user.rating ||
-        profile.avatar !== user.avatar
-      ) {
-        const newUser = {
-          codeforcesHandle: profile.handle as string,
-          avatar: profile.avatar as string,
-          rating: profile.rating as number,
-          level: getLevelByRating(profile.rating),
-        };
-        await mutate(newUser, { revalidate: false });
+    // This effect runs once on the client to load the initial user from localStorage.
+    setUser(getStoredUser());
+    setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    // This effect syncs the user state back to localStorage whenever it changes.
+    if (typeof window !== "undefined") {
+      if (user) {
+        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+      } else {
+        localStorage.removeItem(USER_STORAGE_KEY);
       }
-    };
-    fetchLatestUser();
-  }, [user?.codeforcesHandle]);
-
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
     }
   }, [user]);
 
-  const updateUser = async (codeforcesHandle: string) => {
+  const updateUser = useCallback(async (codeforcesHandle: string): Promise<Response<User>> => {
     try {
       const res = await getUser(codeforcesHandle);
       if (!res.success) {
-        throw new Error("Failed to fetch user");
+        throw new Error(res.error || "User not found");
       }
       
       const profile = res.data;
@@ -71,63 +54,42 @@ const useUser = () => {
         level: getLevelByRating(profile.rating),
       };
       
-      await mutate(newUser, { revalidate: false });
-      return SuccessResponse("User updated successfully");
-    } catch (error) {
-      console.error("Error updating user:", error);
-      return ErrorResponse("Failed to update user");
+      // Explicitly set the state. This will trigger the re-render.
+      setUser(newUser);
+      return SuccessResponse(newUser);
+    } catch (err) {
+      console.error("Error updating user:", err);
+      const errorMessage = err instanceof Error ? err.message : "Failed to update user";
+      setError(new Error(errorMessage));
+      return ErrorResponse(errorMessage);
     }
-  };
+  }, []);
 
-  const changeUserLevel = async (newLevelNumber: number) => {
-    if (!user) {
-      return ErrorResponse("User not found");
-    }
-
-    const originalLevel = user.level;
+  const changeUserLevel = useCallback(async (newLevelNumber: number) => {
+    if (!user) return ErrorResponse("User not found");
     const newLevel = getLevel(newLevelNumber);
+    setUser((currentUser) => currentUser ? { ...currentUser, level: newLevel } : null);
+    return SuccessResponse("User level updated successfully");
+  }, [user]);
 
-    try {
-      await mutate({ ...user, level: newLevel }, { revalidate: false });
-      return SuccessResponse("User level updated successfully");
-    } catch (error) {
-      await mutate({ ...user, level: originalLevel }, { revalidate: false });
-      console.error("Error updating user level:", error);
-      return ErrorResponse("Failed to update user level");
-    }
-  };
-
-  const updateUserLevel = async ({ delta }: { delta: number }) => {
-    // update user level after training
-    if (!user) {
-      return ErrorResponse("User not found");
-    }
-
+  const updateUserLevel = useCallback(async ({ delta }: { delta: number }) => {
+    if (!user) return ErrorResponse("User not found");
     const newLevel = getLevel(+user.level.level + delta);
-
     if (!newLevel || +newLevel.level < 1 || +newLevel.level > 109) {
       return ErrorResponse("Failed to update user level");
     }
+    setUser((currentUser) => currentUser ? { ...currentUser, level: newLevel } : null);
+    return SuccessResponse("User level updated successfully");
+  }, [user]);
 
-    try {
-      await mutate({ ...user, level: newLevel }, { revalidate: false });
-      return SuccessResponse("User level updated successfully");
-    } catch (error) {
-      console.error("Error updating user level:", error);
-      return ErrorResponse("Failed to update user level");
-    }
-  };
-
-  const logout = () => {
-    mutate(null, { revalidate: false });
-    localStorage.removeItem(USER_STORAGE_KEY);
-  };
+  const logout = useCallback(() => {
+    setUser(null);
+  }, []);
 
   return {
     user,
     isLoading,
     error,
-
     updateUser,
     updateUserLevel,
     changeUserLevel,
@@ -136,3 +98,4 @@ const useUser = () => {
 };
 
 export default useUser;
+

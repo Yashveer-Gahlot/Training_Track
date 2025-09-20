@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import ModeToggle from "@/components/ModeToggle";
-import { Menu } from "lucide-react";
+import { Menu, Dumbbell } from "lucide-react";
 
 const links = [
   { href: "/", label: "Home" },
@@ -19,18 +19,20 @@ const NavBar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border/60">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <Link href="/" className="text-xl font-bold">
-            Training Tracker
+          <Link href="/" className="flex items-center gap-2 text-xl font-bold text-primary hover:opacity-80 transition-opacity">
+            <Dumbbell className="w-6 h-6" />
+            <span>Engima</span>
           </Link>
-          <div className="hidden sm:flex items-center space-x-4">
+          <div className="hidden sm:flex items-center space-x-2">
             {links.map((link) => (
               <Button
                 key={link.href}
-                variant={pathname === link.href ? "default" : "ghost"}
+                variant={pathname === link.href ? "secondary" : "ghost"}
                 asChild
+                className="transition-all"
               >
                 <Link href={link.href}>{link.label}</Link>
               </Button>
@@ -49,12 +51,12 @@ const NavBar = () => {
           </div>
         </div>
         {isMenuOpen && (
-          <div className="sm:hidden">
+          <div className="sm:hidden animate-fade-in">
             <div className="pt-2 pb-4 space-y-2">
               {links.map((link) => (
                 <Button
                   key={link.href}
-                  variant={pathname === link.href ? "default" : "ghost"}
+                  variant={pathname === link.href ? "secondary" : "ghost"}
                   className="w-full justify-start"
                   asChild
                   onClick={() => setIsMenuOpen(false)}
@@ -62,7 +64,7 @@ const NavBar = () => {
                   <Link href={link.href}>{link.label}</Link>
                 </Button>
               ))}
-              <div className="pt-2">
+              <div className="pt-2 flex justify-start">
                 <ModeToggle />
               </div>
             </div>

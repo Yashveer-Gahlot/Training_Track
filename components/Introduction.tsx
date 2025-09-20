@@ -62,25 +62,6 @@ const Introduction = () => {
       <p className="w-full text-left">
         2. For now, <span className="font-bold">all the data (user info, training history, etc.) are stored in your browser&apos;s local storage</span>, so once you clear the data, you will lose all your training history.
       </p>
-      <p className="w-full text-left">
-        This project is developed by{" "}
-        <Link
-          href="https://codeforces.com/profile/C0ldSmi1e"
-          target="_blank"
-          className="text-blue-500 hover:underline"
-        >
-          C0ldSmi1e
-        </Link>
-        . You can find the source code{" "}
-        <Link
-          href="https://github.com/C0ldSmi1e/training-tracker"
-          target="_blank"
-          className="text-blue-500 hover:underline"
-        >
-          here
-        </Link>
-        . Any suggestions, bug reports or feature requests are welcome.
-      </p>
     </div>
   );
 };

@@ -3,20 +3,19 @@ import localFont from "next/font/local";
 import "./globals.css";
 import NavBar from "@/components/NavBar";
 import ThemeProvider from "@/components/ThemeProvider";
+import { cn } from "@/lib/utils";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
-  weight: "100 900",
 });
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
-  weight: "100 900",
 });
 
 export const metadata: Metadata = {
-  title: "Training Tracker",
+  title: "Enigma",
   description: "A tool for tracking competitive programming training",
 };
 
@@ -28,21 +27,24 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased font-mono`}
+        className={cn(
+          geistSans.variable,
+          geistMono.variable,
+          "antialiased font-sans cp-background" // This class applies the new background
+        )}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          defaultTheme="dark" // Setting dark theme as default for the new aesthetic
           enableSystem
           disableTransitionOnChange
         >
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative z-10">
             <NavBar />
-            <main className="pt-16 pb-8">{children}</main>
+            <main>{children}</main>
           </div>
         </ThemeProvider>
       </body>
     </html>
   );
 }
-
