@@ -97,5 +97,5 @@ const useUser = () => {
   };
 };
 
-export default useUser;
-
+// export default useUser;
+export { default } from "@/providers/UserProvider";
