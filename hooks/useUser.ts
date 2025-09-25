@@ -1,101 +1,114 @@
-import { useState, useEffect, useCallback } from "react";
-import { User } from "@/types/User";
-import getUser from "@/utils/codeforces/getUser";
-import { getLevel, getLevelByRating } from "@/utils/getLevel";
-import { SuccessResponse, ErrorResponse, Response } from "@/types/Response";
+// hooks/useUser.ts
+'use client';
 
-const USER_STORAGE_KEY = "training-tracker-user";
+import { useState, useEffect, useCallback } from 'react';
 
-const getStoredUser = (): User | null => {
-  try {
-    // This check prevents errors during server-side rendering
-    if (typeof window === "undefined") return null;
-    const stored = localStorage.getItem(USER_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
-};
+interface User {
+  handle: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  rating?: number;
+  maxRating?: number;
+  rank?: string;
+  maxRank?: string;
+  country?: string;
+  city?: string;
+  organization?: string;
+  contribution?: number;
+  lastOnlineTimeSeconds?: number;
+  registrationTimeSeconds?: number;
+  friendOfCount?: number;
+  avatar?: string;
+  titlePhoto?: string;
+}
 
 const useUser = () => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Load user from localStorage on mount
   useEffect(() => {
-    // This effect runs once on the client to load the initial user from localStorage.
-    setUser(getStoredUser());
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
-    // This effect syncs the user state back to localStorage whenever it changes.
-    if (typeof window !== "undefined") {
-      if (user) {
-        localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-      } else {
-        localStorage.removeItem(USER_STORAGE_KEY);
-      }
-    }
-  }, [user]);
-
-  const updateUser = useCallback(async (codeforcesHandle: string): Promise<Response<User>> => {
     try {
-      const res = await getUser(codeforcesHandle);
-      if (!res.success) {
-        throw new Error(res.error || "User not found");
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        console.log('Loaded user from localStorage:', parsedUser);
+        setUser(parsedUser);
       }
-      
-      const profile = res.data;
-      const newUser = {
-        codeforcesHandle: profile.handle as string,
-        avatar: profile.avatar as string,
-        rating: profile.rating as number,
-        level: getLevelByRating(profile.rating),
-      };
-      
-      // Explicitly set the state. This will trigger the re-render.
-      setUser(newUser);
-      return SuccessResponse(newUser);
-    } catch (err) {
-      console.error("Error updating user:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to update user";
-      setError(new Error(errorMessage));
-      return ErrorResponse(errorMessage);
+    } catch (error) {
+      console.error('Failed to parse user from localStorage', error);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  const changeUserLevel = useCallback(async (newLevelNumber: number) => {
-    if (!user) return ErrorResponse("User not found");
-    const newLevel = getLevel(newLevelNumber);
-    setUser((currentUser) => currentUser ? { ...currentUser, level: newLevel } : null);
-    return SuccessResponse("User level updated successfully");
-  }, [user]);
-
-  const updateUserLevel = useCallback(async ({ delta }: { delta: number }) => {
-    if (!user) return ErrorResponse("User not found");
-    const newLevel = getLevel(+user.level.level + delta);
-    if (!newLevel || +newLevel.level < 1 || +newLevel.level > 109) {
-      return ErrorResponse("Failed to update user level");
+  // Save user to localStorage whenever user changes
+  useEffect(() => {
+    if (!isLoading) {
+      if (user) {
+        console.log('Saving user to localStorage:', user);
+        localStorage.setItem('user', JSON.stringify(user));
+      } else {
+        console.log('Removing user from localStorage');
+        localStorage.removeItem('user');
+      }
     }
-    setUser((currentUser) => currentUser ? { ...currentUser, level: newLevel } : null);
-    return SuccessResponse("User level updated successfully");
-  }, [user]);
+  }, [user, isLoading]);
 
-  const logout = useCallback(() => {
-    setUser(null);
+  // Update user function - fetches full profile from Codeforces
+  const updateUser = useCallback(async (handle: string) => {
+    console.log('updateUser called with handle:', handle);
+    
+    try {
+      // Fetch user info from Codeforces API
+      const response = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`);
+      const data = await response.json();
+      
+      console.log('Codeforces API response:', data);
+      
+      if (data.status === "OK" && data.result.length > 0) {
+        const codeforcesUser = data.result[0];
+        
+        const enhancedUser: User = {
+          handle: codeforcesUser.handle,
+          firstName: codeforcesUser.firstName,
+          lastName: codeforcesUser.lastName,
+          email: codeforcesUser.email,
+          rating: codeforcesUser.rating,
+          maxRating: codeforcesUser.maxRating,
+          rank: codeforcesUser.rank,
+          maxRank: codeforcesUser.maxRank,
+          country: codeforcesUser.country,
+          city: codeforcesUser.city,
+          organization: codeforcesUser.organization,
+          contribution: codeforcesUser.contribution,
+          lastOnlineTimeSeconds: codeforcesUser.lastOnlineTimeSeconds,
+          registrationTimeSeconds: codeforcesUser.registrationTimeSeconds,
+          friendOfCount: codeforcesUser.friendOfCount,
+          avatar: codeforcesUser.avatar,
+          titlePhoto: codeforcesUser.titlePhoto,
+        };
+        
+        console.log('Setting enhanced user:', enhancedUser);
+        setUser(enhancedUser);
+        return enhancedUser;
+      } else {
+        throw new Error('User not found on Codeforces');
+      }
+    } catch (error) {
+      console.error('Error in updateUser:', error);
+      throw error;
+    }
   }, []);
 
   return {
     user,
+    setUser,
     isLoading,
-    error,
-    updateUser,
-    updateUserLevel,
-    changeUserLevel,
-    logout,
+    updateUser
   };
 };
 
-// export default useUser;
-export { default } from "@/providers/UserProvider";
+export default useUser;

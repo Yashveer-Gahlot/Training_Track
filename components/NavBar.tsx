@@ -1,60 +1,64 @@
-// src/components/Navbar.tsx
-"use client";
+// components/NavBar.tsx
+'use client';
 
-import { useState } from "react";
-import Link from "next/link";
-import useUser from "@/providers/userProvider";
-import UserIndicator from "./UserIndicator";
-import LoginDialog from "./LoginDialog";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { ThemeToggle } from './ThemeToggle';
+import LoginButton from './LoginButton';
+import Link from 'next/link';
 
-const Navbar = () => {
-  const { user } = useUser();
-  const [showLogin, setShowLogin] = useState(false);
-
+const NavBar = () => {
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo/Brand */}
-          <div className="flex items-center">
-            <Link href="/" className="text-xl font-bold text-gray-900">
-              Training Tracker
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          
+          {/* Left Side: Logo + Navigation Links */}
+          <div className="flex items-center space-x-8">
+            {/* Logo */}
+            <Link href="/" className="flex items-center space-x-2">
+              <span className="text-xl font-bold text-foreground">
+                Enigma
+              </span>
             </Link>
+
+            {/* Desktop Navigation Links */}
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link
+                href="/"
+                className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              >
+                Home
+              </Link>
+              <Link
+                href="/training"
+                className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              >
+                Training
+              </Link>
+              <Link
+                href="/statistics"
+                className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              >
+                Statistics
+              </Link>
+              <Link
+                href="/upsolve"
+                className="text-sm font-medium text-foreground/60 transition-colors hover:text-foreground"
+              >
+                Upsolve
+              </Link>
+            </nav>
           </div>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Home
-            </Link>
-            <Link href="/training" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Training
-            </Link>
-            <Link href="/statistics" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Statistics
-            </Link>
-            <Link href="/upsolve" className="text-gray-700 hover:text-blue-600 transition-colors">
-              Upsolve
-            </Link>
-          </div>
-
-          {/* User Section */}
-          <div className="flex items-center">
-            {user ? (
-              <UserIndicator />
-            ) : (
-              <Button onClick={() => setShowLogin(true)} variant="default">
-                Login
-              </Button>
-            )}
+          {/* Right Side: Login + Theme Toggle */}
+          <div className="flex items-center space-x-4">
+            <LoginButton />
+            <ThemeToggle />
           </div>
         </div>
       </div>
-
-      <LoginDialog open={showLogin} onOpenChange={setShowLogin} />
-    </nav>
+    </header>
   );
 };
 
-export default Navbar;
+export default NavBar;
