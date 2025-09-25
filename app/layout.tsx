@@ -6,6 +6,7 @@ import "./globals.css";
 import NavBar from "@/components/NavBar";
 import { cn } from "@/lib/utils";
 import Providers from "./providers"; // Assuming this is at app/providers.tsx
+import { Analytics } from "@vercel/analytics/next"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -36,6 +37,7 @@ export default function RootLayout({
         )}
       >
         <Providers>
+          <Analytics />
           <div className="relative flex min-h-screen flex-col">
             <NavBar />
             <main className="flex-1">{children}</main>
