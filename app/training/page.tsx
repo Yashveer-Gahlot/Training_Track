@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Timer, Play, Square, Target, CheckCircle, ArrowLeft, Lightbulb } from 'lucide-react';
+import { Timer, Play, Square, Target, CheckCircle, ArrowLeft, Lightbulb, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface Problem {

@@ -234,7 +234,3 @@ export default function StatisticsPage() {
     </div>
   );
 }
-<<<<<<< HEAD
-// what is amend.
-=======
->>>>>>> refs/remotes/origin/main

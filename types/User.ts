@@ -1,7 +1,7 @@
 import { Level } from "@/types/Level";
 
 type User = {
-  codeforcesHandle: string;
+  handle: string;
   rating: number;
   avatar: string;
   level: Level;

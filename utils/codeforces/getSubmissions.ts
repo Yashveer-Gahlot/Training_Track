@@ -8,7 +8,7 @@ const getSubmissions = async (
   count?: number
 ): Promise<Response<CodeforcesSubmission[]>> => {
   try {
-    let url = `https://codeforces.com/api/user.status?handle=${user.codeforcesHandle}`;
+    let url = `https://codeforces.com/api/user.status?handle=${user.handle}`;
     if (from) {
       url += `&from=${from}`;
     }

@@ -139,6 +139,14 @@ const LoginDialog = ({ open, onOpenChange }: LoginDialogProps) => {
               type="submit"
               disabled={!handle.trim() || isLoading}
               className="flex-1"
+              onClick={() => {
+              // Let form submit, then reload after successful login
+              setTimeout(() => {
+                if (!isLoading && handle.trim()) {
+                window.location.reload();
+                }
+              }, 500);
+              }}
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {isLoading ? "Logging in..." : "Login"}

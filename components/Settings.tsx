@@ -26,9 +26,7 @@ const Settings = () => {
 
     const res = await updateUser(codeforcesHandle);
 
-    if (!res.success) {
-      setErrorMessage(res.error);
-    }
+    
     // If the update is successful, the parent component (page.tsx)
     // will automatically re-render and replace this component with the Profile.
     

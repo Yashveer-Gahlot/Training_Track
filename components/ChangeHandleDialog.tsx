@@ -34,7 +34,7 @@ const ChangeHandleDialog = ({ open, onOpenChange }: ChangeHandleDialogProps) => 
       return;
     }
 
-    if (newHandle.trim() === user?.codeforcesHandle) {
+    if (newHandle.trim() === user?.handle) {
       setError("New handle cannot be the same as current handle.");
       return;
     }
@@ -45,16 +45,16 @@ const ChangeHandleDialog = ({ open, onOpenChange }: ChangeHandleDialogProps) => 
 
     const res = await updateUser(newHandle.trim());
 
-    if (res.success) {
-      setSuccess(true);
-      setNewHandle("");
-      setTimeout(() => {
-        onOpenChange(false);
-        setSuccess(false);
-      }, 1500);
-    } else {
-      setError(res.error);
-    }
+    // if (res.success) {
+    //   setSuccess(true);
+    //   setNewHandle("");
+    //   setTimeout(() => {
+    //     onOpenChange(false);
+    //     setSuccess(false);
+    //   }, 1500);
+    // } else {
+    //   setError(res.error);
+    // }
     
     setIsLoading(false);
   };
@@ -92,7 +92,7 @@ const ChangeHandleDialog = ({ open, onOpenChange }: ChangeHandleDialogProps) => 
             <Input
               id="current-handle"
               type="text"
-              value={user?.codeforcesHandle || ""}
+              value={user?.handle || ""}
               disabled
               className="bg-gray-50"
             />

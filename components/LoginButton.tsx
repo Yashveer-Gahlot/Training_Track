@@ -70,7 +70,3 @@ const LoginButton = () => {
 };
 
 export default LoginButton;
-<<<<<<< HEAD
-
-=======
->>>>>>> refs/remotes/origin/main

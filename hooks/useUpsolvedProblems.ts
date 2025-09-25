@@ -2,7 +2,7 @@ import { useEffect, useMemo, useCallback } from "react";
 import useSWR from "swr";
 import { TrainingProblem } from "@/types/TrainingProblem";
 import { SuccessResponse, ErrorResponse } from "@/types/Response";
-import useUser from "@/hooks/useUser";
+import useUser from "@/providers/UserProvider";
 import useProblems from "@/hooks/useProblems";
 
 const UPSOLVED_PROBLEMS_CACHE_KEY = "training-tracker-upsolved-problems";
@@ -17,12 +17,13 @@ const getStoredUpsolvedProblems = () => {
 };
 
 const useUpsolvedProblems = () => {
-  const { user } = useUser();
+  const {user} = useUser();
   const {
-    isLoading: isProblemsLoading,
-    refreshSolvedProblems,
-    solvedProblems,
-  } = useProblems(user);
+  isLoading: isProblemsLoading,
+  refreshSolvedProblems,
+  solvedProblems,
+} = useProblems(user as any); // Type assertion
+
   const { data, isLoading, error, mutate } = useSWR<TrainingProblem[]>(
     UPSOLVED_PROBLEMS_CACHE_KEY,
     getStoredUpsolvedProblems

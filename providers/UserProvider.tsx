@@ -4,8 +4,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Enhanced user interface with Codeforces data
+// Enhanced user interface with Codeforces data
 interface User {
-  handle: string;
+  
+  handle?: string;  // Add this property
+  level?: string | number;    // Add this property
   firstName?: string;
   lastName?: string;
   email?: string;
@@ -24,11 +27,12 @@ interface User {
   titlePhoto?: string;
 }
 
+
 interface UserContextType {
   user: User | null;
   setUser: (user: User | null) => void;
   isLoading: boolean;
-  updateUserDetails: (handle: string) => Promise<void>;
+  updateUser: (handle: string) => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -38,42 +42,49 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Function to fetch detailed user information from Codeforces API
-  const updateUserDetails = async (handle: string) => {
-    try {
-      const response = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`);
-      const data = await response.json();
+  const updateUser = async (handle: string) => {
+  try {
+    const response = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`);
+    const data = await response.json();
+    
+    if (data.status === "OK" && data.result.length > 0) {
+      const codeforcesUser = data.result[0];
       
-      if (data.status === "OK" && data.result.length > 0) {
-        const codeforcesUser = data.result[0];
-        
-        const enhancedUser: User = {
-          handle: codeforcesUser.handle,
-          firstName: codeforcesUser.firstName,
-          lastName: codeforcesUser.lastName,
-          email: codeforcesUser.email,
-          rating: codeforcesUser.rating,
-          maxRating: codeforcesUser.maxRating,
-          rank: codeforcesUser.rank,
-          maxRank: codeforcesUser.maxRank,
-          country: codeforcesUser.country,
-          city: codeforcesUser.city,
-          organization: codeforcesUser.organization,
-          contribution: codeforcesUser.contribution,
-          lastOnlineTimeSeconds: codeforcesUser.lastOnlineTimeSeconds,
-          registrationTimeSeconds: codeforcesUser.registrationTimeSeconds,
-          friendOfCount: codeforcesUser.friendOfCount,
-          avatar: codeforcesUser.avatar,
-          titlePhoto: codeforcesUser.titlePhoto,
-        };
-        
-        setUser(enhancedUser);
-      }
-    } catch (error) {
-      console.error("Failed to fetch user details:", error);
-      // Fallback to basic user object
-      setUser({ handle });
+      const enhancedUser: User = {
+        handle: codeforcesUser.handle,
+ 
+        level: codeforcesUser.rank || codeforcesUser.rating || 'unrated', // Add this line
+        firstName: codeforcesUser.firstName,
+        lastName: codeforcesUser.lastName,
+        email: codeforcesUser.email,
+        rating: codeforcesUser.rating,
+        maxRating: codeforcesUser.maxRating,
+        rank: codeforcesUser.rank,
+        maxRank: codeforcesUser.maxRank,
+        country: codeforcesUser.country,
+        city: codeforcesUser.city,
+        organization: codeforcesUser.organization,
+        contribution: codeforcesUser.contribution,
+        lastOnlineTimeSeconds: codeforcesUser.lastOnlineTimeSeconds,
+        registrationTimeSeconds: codeforcesUser.registrationTimeSeconds,
+        friendOfCount: codeforcesUser.friendOfCount,
+        avatar: codeforcesUser.avatar,
+        titlePhoto: codeforcesUser.titlePhoto,
+      };
+      
+      setUser(enhancedUser);
     }
-  };
+  } catch (error) {
+    console.error("Failed to fetch user details:", error);
+    // Fallback to basic user object
+    setUser({ 
+      handle,
+
+      level: 'unrated' // Add this line
+    });
+  }
+};
+
 
   useEffect(() => {
     try {
@@ -84,7 +95,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         
         // If stored user doesn't have rating info, fetch it
         if (parsedUser.handle && !parsedUser.rating && parsedUser.rating !== 0) {
-          updateUserDetails(parsedUser.handle);
+          updateUser(parsedUser.handle);
         }
       }
     } catch (error) {
@@ -105,7 +116,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }
   }, [user, isLoading]);
 
-  const value = { user, setUser, isLoading, updateUserDetails };
+  const value = { user, setUser, isLoading, updateUser };
 
   return (
     <UserContext.Provider value={value}>
@@ -114,7 +125,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useUser() {
+export default function useUser() {
   const context = useContext(UserContext);
   if (!context) {
     throw new Error('useUser must be used within a UserProvider');

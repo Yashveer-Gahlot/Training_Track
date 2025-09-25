@@ -41,7 +41,7 @@ const useProblems = (user: User | null | undefined) => {
     isLoading: isLoadingSolved,
     mutate: mutateSolved
   } = useSWR<CodeforcesProblem[]>(
-    user ? SOLVED_PROBLEMS_CACHE_KEY(user.codeforcesHandle) : null,
+    user ? SOLVED_PROBLEMS_CACHE_KEY(user.handle) : null,
     async () => {
       if (!user) {
         throw new Error("No user");

@@ -3,7 +3,7 @@
 'use client';
 
 import React from 'react';
-import { useUser } from '@/providers/UserProvider';
+import  useUser  from '@/providers/UserProvider';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 
