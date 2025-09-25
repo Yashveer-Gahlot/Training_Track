@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import useUser from "@/providers/userProvider";
+import useUser from "@/providers/UserProvider";
 import {
   Dialog,
   DialogContent,

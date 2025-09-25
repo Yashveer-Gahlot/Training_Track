@@ -1,10 +1,11 @@
+// app/layout.tsx
+
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import NavBar from "@/components/NavBar";
-import ThemeProvider from "@/components/ThemeProvider";
 import { cn } from "@/lib/utils";
-import Providers from "./providers";
+import Providers from "./providers"; // Assuming this is at app/providers.tsx
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,23 +32,15 @@ export default function RootLayout({
         className={cn(
           geistSans.variable,
           geistMono.variable,
-          "antialiased font-sans cp-background" // This class applies the new background
+          "antialiased font-sans cp-background"
         )}
       >
         <Providers>
-
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark" // Setting dark theme as default for the new aesthetic
-          enableSystem
-          disableTransitionOnChange
-          >
-          <div className="relative z-10">
+          <div className="relative flex min-h-screen flex-col">
             <NavBar />
-            <main>{children}</main>
+            <main className="flex-1">{children}</main>
           </div>
-        </ThemeProvider>
-          </Providers>
+        </Providers>
       </body>
     </html>
   );

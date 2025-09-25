@@ -4,13 +4,10 @@ import { motion } from "framer-motion";
 import useUser from "@/hooks/useUser";
 import Hero from "@/components/Hero";
 import IntroductionSection from "@/components/IntroductionSection";
-import Profile from "@/components/Profile";
-import Settings from "@/components/Settings";
 import Loader from "@/components/Loader";
-import { Card, CardContent } from "@/components/ui/card";
+import SimpleUserSection from "@/components/SimpleUserSection";
 
 const Home = () => {
-  // The hook now directly provides the user state for the conditional rendering.
   const { user, isLoading } = useUser();
 
   const sectionVariants = {
@@ -45,14 +42,7 @@ const Home = () => {
         viewport={{ once: true, amount: 0.5 }}
         variants={sectionVariants}
       >
-        <Card className="w-full max-w-2xl">
-          <CardContent className="pt-6">
-            {/* This is the key change. We no longer pass props. 
-              The Profile and Settings components will get the data they need from the context themselves.
-            */}
-            {user ? <Profile /> : <Settings />}
-          </CardContent>
-        </Card>
+        <SimpleUserSection />
       </motion.div>
 
       <motion.div
@@ -69,4 +59,3 @@ const Home = () => {
 };
 
 export default Home;
-

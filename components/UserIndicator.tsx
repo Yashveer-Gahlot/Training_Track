@@ -1,88 +1,45 @@
-// src/components/UserIndicator.tsx
-"use client";
+// components/UserIndicator.tsx
 
-import { useState } from "react";
-import useUser from "@/providers/userProvider";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { User, Settings, LogOut } from "lucide-react";
-import ChangeHandleDialog from "./ChangeHandleDialog";
+'use client';
+
+import React from 'react';
+import { useUser } from '@/providers/UserProvider';
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// A safer function to get initials that handles undefined or empty names.
+const getInitials = (name?: string): string => {
+  // If name is null, undefined, or an empty string, return a default character.
+  if (!name || typeof name !== 'string' || name.trim() === '') {
+    return '?';
+  }
+  
+  // If the name is valid, return the first letter, capitalized.
+  return name.trim().slice(0, 1).toUpperCase();
+};
 
 const UserIndicator = () => {
-  const { user, logout } = useUser();
-  const [showChangeHandle, setShowChangeHandle] = useState(false);
+  const { user, isLoading } = useUser();
 
-  if (!user) return null;
+  // 1. First, handle the loading state.
+  // While the user object is being loaded from localStorage, show a placeholder.
+  if (isLoading) {
+    return <Skeleton className="h-10 w-10 rounded-full" />;
+  }
 
-  const getInitials = (handle: string) => {
-    return handle.slice(0, 2).toUpperCase();
-  };
+  // 2. Next, handle the case where the user is not logged in.
+  // If loading is finished and the user is still null, render nothing.
+  if (!user) {
+    return null; 
+  }
 
-  const getRatingColor = (rating: number) => {
-    if (rating >= 2400) return "text-red-600";
-    if (rating >= 2100) return "text-orange-600";
-    if (rating >= 1900) return "text-purple-600";
-    if (rating >= 1600) return "text-blue-600";
-    if (rating >= 1400) return "text-cyan-600";
-    if (rating >= 1200) return "text-green-600";
-    return "text-gray-600";
-  };
+  // 3. Only if loading is complete AND a user exists, render the avatar.
+  const initials = getInitials(user.handle);
 
   return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <button className="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition-colors">
-            <Avatar className="h-8 w-8">
-              <AvatarImage src={user.avatar} alt={user.codeforcesHandle} />
-              <AvatarFallback className="bg-blue-500 text-white text-sm">
-                {getInitials(user.codeforcesHandle)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="hidden md:block text-left">
-              <p className="text-sm font-medium text-gray-900">{user.codeforcesHandle}</p>
-              <p className={`text-xs ${getRatingColor(user.rating || 0)}`}>
-                Rating: {user.rating || "Unrated"}
-              </p>
-            </div>
-          </button>
-        </DropdownMenuTrigger>
-        
-        <DropdownMenuContent className="w-56" align="end">
-          <DropdownMenuLabel>
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium">{user.codeforcesHandle}</p>
-              <p className={`text-xs ${getRatingColor(user.rating || 0)}`}>
-                Rating: {user.rating || "Unrated"}
-              </p>
-            </div>
-          </DropdownMenuLabel>
-          
-          <DropdownMenuSeparator />
-          
-          <DropdownMenuItem onClick={() => setShowChangeHandle(true)}>
-            <Settings className="mr-2 h-4 w-4" />
-            Change Handle
-          </DropdownMenuItem>
-          
-          <DropdownMenuSeparator />
-          
-          <DropdownMenuItem onClick={logout} className="text-red-600">
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <ChangeHandleDialog open={showChangeHandle} onOpenChange={setShowChangeHandle} />
-    </>
+    <Avatar>
+      <AvatarFallback>{initials}</AvatarFallback>
+    </Avatar>
   );
 };
 

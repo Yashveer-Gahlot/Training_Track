@@ -1,132 +1,123 @@
-// src/providers/userProvider.tsx
-"use client";
+// providers/UserProvider.tsx
+'use client';
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-  type ReactNode,
-} from "react";
-import { User } from "@/types/User";
-import getUser from "@/utils/codeforces/getUser";
-import { getLevel, getLevelByRating } from "@/utils/getLevel";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-type Ctx = {
-  user: User | null;
-  isLoading: boolean;
-  error: Error | null;
-  updateUser: (handle: string) => Promise<{ success: true; data: User } | { success: false; error: string }>;
-  updateUserLevel: (args: { delta: number }) => Promise<{ success: boolean; error?: string }>;
-  changeUserLevel: (newLevelNumber: number) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
-};
-
-const UserContext = createContext<Ctx | null>(null);
-
-const USER_STORAGE_KEY = "training-tracker-user";
-
-function getStoredUser(): User | null {
-  try {
-    if (typeof window === "undefined") return null;
-    const stored = localStorage.getItem(USER_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : null;
-  } catch {
-    return null;
-  }
+// Enhanced user interface with Codeforces data
+interface User {
+  handle: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  rating?: number;
+  maxRating?: number;
+  rank?: string;
+  maxRank?: string;
+  country?: string;
+  city?: string;
+  organization?: string;
+  contribution?: number;
+  lastOnlineTimeSeconds?: number;
+  registrationTimeSeconds?: number;
+  friendOfCount?: number;
+  avatar?: string;
+  titlePhoto?: string;
 }
+
+interface UserContextType {
+  user: User | null;
+  setUser: (user: User | null) => void;
+  isLoading: boolean;
+  updateUserDetails: (handle: string) => Promise<void>;
+}
+
+const UserContext = createContext<UserContextType | null>(null);
 
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load initial user from localStorage on mount
-  useEffect(() => {
-    setUser(getStoredUser());
-    setIsLoading(false);
-  }, []);
-
-  // Persist to localStorage when user changes
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (user) {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(USER_STORAGE_KEY);
-    }
-  }, [user]);
-
-  const updateUser = useCallback(
-    async (codeforcesHandle: string) => {
-      try {
-        const res = await getUser(codeforcesHandle);
-        if (!res.success) {
-          throw new Error(res.error || "User not found");
-        }
-        const profile = res.data;
-        const nextUser: User = {
-          codeforcesHandle: profile.handle as string,
-          avatar: profile.avatar as string,
-          rating: profile.rating as number,
-          level: getLevelByRating(profile.rating),
+  // Function to fetch detailed user information from Codeforces API
+  const updateUserDetails = async (handle: string) => {
+    try {
+      const response = await fetch(`https://codeforces.com/api/user.info?handles=${handle}`);
+      const data = await response.json();
+      
+      if (data.status === "OK" && data.result.length > 0) {
+        const codeforcesUser = data.result[0];
+        
+        const enhancedUser: User = {
+          handle: codeforcesUser.handle,
+          firstName: codeforcesUser.firstName,
+          lastName: codeforcesUser.lastName,
+          email: codeforcesUser.email,
+          rating: codeforcesUser.rating,
+          maxRating: codeforcesUser.maxRating,
+          rank: codeforcesUser.rank,
+          maxRank: codeforcesUser.maxRank,
+          country: codeforcesUser.country,
+          city: codeforcesUser.city,
+          organization: codeforcesUser.organization,
+          contribution: codeforcesUser.contribution,
+          lastOnlineTimeSeconds: codeforcesUser.lastOnlineTimeSeconds,
+          registrationTimeSeconds: codeforcesUser.registrationTimeSeconds,
+          friendOfCount: codeforcesUser.friendOfCount,
+          avatar: codeforcesUser.avatar,
+          titlePhoto: codeforcesUser.titlePhoto,
         };
-        setUser(nextUser);
-        return { success: true as const, data: nextUser };
-      } catch (e: any) {
-        const msg = e?.message ?? "Failed to update user";
-        setError(new Error(msg));
-        return { success: false as const, error: msg };
+        
+        setUser(enhancedUser);
       }
-    },
-    []
-  );
-
-  const changeUserLevel = useCallback(
-    async (newLevelNumber: number) => {
-      if (!user) return { success: false, error: "User not found" };
-      const lvl = getLevel(newLevelNumber);
-      setUser((u) => (u ? { ...u, level: lvl } : u));
-      return { success: true };
-    },
-    [user]
-  );
-
-  const updateUserLevel = useCallback(
-    async ({ delta }: { delta: number }) => {
-      if (!user) return { success: false, error: "User not found" };
-      const lvl = getLevel(+user.level.level + delta);
-      if (!lvl || +lvl.level < 1 || +lvl.level > 109) {
-        return { success: false, error: "Failed to update user level" };
-      }
-      setUser((u) => (u ? { ...u, level: lvl } : u));
-      return { success: true };
-    },
-    [user]
-  );
-
-  const logout = useCallback(() => {
-    setUser(null);
-  }, []);
-
-  const value: Ctx = {
-    user,
-    isLoading,
-    error,
-    updateUser,
-    updateUserLevel,
-    changeUserLevel,
-    logout,
+    } catch (error) {
+      console.error("Failed to fetch user details:", error);
+      // Fallback to basic user object
+      setUser({ handle });
+    }
   };
 
-  return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        
+        // If stored user doesn't have rating info, fetch it
+        if (parsedUser.handle && !parsedUser.rating && parsedUser.rating !== 0) {
+          updateUserDetails(parsedUser.handle);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('user');
+      }
+    }
+  }, [user, isLoading]);
+
+  const value = { user, setUser, isLoading, updateUserDetails };
+
+  return (
+    <UserContext.Provider value={value}>
+      {children}
+    </UserContext.Provider>
+  );
 }
 
-export default function useUser() {
-  const ctx = useContext(UserContext);
-  if (!ctx) {
-    throw new Error("useUser must be used within <UserProvider>");
+export function useUser() {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUser must be used within a UserProvider');
   }
-  return ctx;
+  return context;
 }
