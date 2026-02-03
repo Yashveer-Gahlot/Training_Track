@@ -1,8 +1,7 @@
 # Training Tracker
 
-This is a [web app](https://cp-training-tracker.vercel.app/) that helps you track your training history and performance for Competitive Programming.
+This is a [web app](https://enigma-training.vercel.app/) that helps you track your training history and performance for Competitive Programming.
 
-The idea of this app is inspired by [this blog post](https://codeforces.com/blog/entry/136704). Huge thanks to the [author](https://codeforces.com/profile/pwned).
 
 ## Usage
 
